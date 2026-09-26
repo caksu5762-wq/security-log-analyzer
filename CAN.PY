@@ -1,69 +1,77 @@
 logs= [
     {
-        "ip":"192.168.50.7",
-        "status":"failed"
-    },
-    {
-        "ip":"10.20.30.40",
-        "status":"failed"
-    },
-    {
-        "ip":"192.168.50.7",
-        "status":"failed"
-    },
-    {
-        "ip":"172.16.8.9",
+        "ip":"192.168.1.10",
         "status":"success"
     },
     {
-        "ip":"10.20.30.40",
+        "ip":"192.168.1.20",
         "status":"failed"
     },
     {
-        "ip":"192.168.50.7",
+        "ip":"192.168.1.30",
         "status":"failed"
     },
     {
-        "ip":"10.20.30.40",
+        "ip":"192.168.1.20",
         "status":"failed"
+    },
+    {
+        "ip":"192.168.1.20",
+        "status":"failed"
+    },
+    {
+        "ip":"192.168.1.40",
+        "status":"success"
     }
 ]
 
 failed_ips=[]
 for log in logs:
-    print(log["status"]) == "failed"
-    failed_ips.append(log["ip"])
-    failed_ips.count("10.20.30.40")
-
-unique_ips= set(failed_ips)
-for ip in unique_ips:
-   count= failed_ips.count(ip)
-   if count >=3:
-       print("Suspicious IP:",ip)
-       print("Failed attempt:",count)
-
-suspicious_ips = []
-with open("auth.log","r") as file:
-    logs = file.readlines()
-failed_ips=[]
-for log in logs:
-    parçalar = log.strip().split()
-    if parçalar[1] == "failed":
-      failed_ips.append(parçalar[0])
+    if log["status"] == "failed":
+        failed_ips.append(log["ip"])
 
 unique_ips = set(failed_ips)
 for ip in unique_ips:
     count = failed_ips.count(ip)
+    if count >=3:
+        print("şüpheli ip",ip)
+        print("başarısız deneme",count)
+
+suspicions_ips=[]
+
+failed_ips=[]
+with open("security.log","r",encoding="utf-8") as file:
+    okuyucu = file.readlines()
+    for log in okuyucu:
+        parçalar = log.strip().split()
+        if len(parçalar) >= 2 and parçalar[1] == "failed":
+            failed_ips.append(parçalar[0])
+
+unique_ips = set(failed_ips)
+for ip in unique_ips:
+    count = failed_ips.count(ip)
+    if count >=3:
+        suspicions_ips.append(ip)
+
+
+report_lines=[]
+report_lines.append("=== SECURİTY ANALYSIS REPORT ===")
+for ip in suspicions_ips:
+    count = failed_ips.count(ip)
+    if count >= 10:
+        severity = "CRİTİCAL"
+    elif count >=5:
+        severity = "HİGH"
+    else:
+        severity = "MEDİUM"
     if count >= 3:
-        print("Suspicious IP:",ip)
-        print("failed attempt:",count)
-    suspicious_ips.append(ip)
-print(suspicious_ips)
+        report_lines.append(ip + " başarısız deneme-" + str(count) + " RİSK:" + severity)
 
+report_lines.append("TOPLAM ŞÜPHELİ İP:" + str(len(suspicions_ips)))
 
-
-
-
+with open("report.lines","w",encoding="utf-8",newline="") as file:
+    file.write("\n".join(report_lines))
+    
 
 
 
